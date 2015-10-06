@@ -3,7 +3,7 @@
 # Builds the Docker image using Docker-Compose,
 # Wraps running bundler and rspec tests,
 # Starts and Restarts the app;
-# (requires docker, docker-compose and  privileges)
+# (requires docker, docker-compose and privileges)
 #
 
 DOCKER='docker'
@@ -36,58 +36,58 @@ function check_deps {
     return 0
 }
 function app_seed {
-     ${DOCKER_COMPOSE} run web rake db:seed                 # Seeds the database.
-     ${DOCKER_COMPOSE} run web rake db:seed RAILS_ENV=test  # Seeds the test database.
+    ${DOCKER_COMPOSE} run web rake db:seed                 # Seeds the database.
+    ${DOCKER_COMPOSE} run web rake db:seed RAILS_ENV=test  # Seeds the test database.
 }
 function app_restart {
-     ${DOCKER} stop $(${DOCKER} ps -a -q)              # Stops old containers.
-     ${DOCKER_COMPOSE} up                                   # Starts the app.
+    ${DOCKER} stop $(${DOCKER} ps -a -q)              # Stops old containers.
+    ${DOCKER_COMPOSE} up                                   # Starts the app.
 }
 function app_migrate {
-     ${DOCKER_COMPOSE} run web rake db:create               # Creates all databases.
-     ${DOCKER_COMPOSE} run web rake db:migrate              # Runs migrations.
+    ${DOCKER_COMPOSE} run web rake db:create               # Creates all databases.
+    ${DOCKER_COMPOSE} run web rake db:migrate              # Runs migrations.
 }
 function app_cucumber {
     app_migrate
-     ${DOCKER_COMPOSE} run web ./script/cucumber            # Runs acceptance tests.
+    ${DOCKER_COMPOSE} run web ./script/cucumber            # Runs acceptance tests.
 }
 function app_rspec {
     app_migrate
-     ${DOCKER_COMPOSE} run web rake spec                    # Runs rspec tests.
+    ${DOCKER_COMPOSE} run web rake spec                    # Runs rspec tests.
 }
 function app_test {
     app_migrate
-     ${DOCKER_COMPOSE} run web rake spec                    # Runs unity tests.
-     ${DOCKER_COMPOSE} run web ./script/cucumber            # Runs acceptance tests.
+    ${DOCKER_COMPOSE} run web rake spec                    # Runs unity tests.
+    ${DOCKER_COMPOSE} run web ./script/cucumber            # Runs acceptance tests.
 }
 function app_db {
-     ${DOCKER_COMPOSE} run db psql -U postgres -h db
+    ${DOCKER_COMPOSE} run db psql -U postgres -h db
 }
 function app_db_reset {
-     ${DOCKER_COMPOSE} run web rake db:reset
+    ${DOCKER_COMPOSE} run web rake db:reset
 }
 function app_run {
     app_migrate
     if [[ -f ./tmp/pid/server.pid ]]
     then
-         rm ./tmp/pid/server.pid
+        rm ./tmp/pid/server.pid
     fi
-     ${DOCKER_COMPOSE} up                                   # Starts the app.
+    ${DOCKER_COMPOSE} up                                   # Starts the app.
 }
 function build_update {
-     ${DOCKER_COMPOSE} run web bundle update                # Updating gems.
+    ${DOCKER_COMPOSE} run web bundle update                # Updating gems.
     app_test
 }
 function build_clean {
-    CONTAINERS=$( ${DOCKER} ps -a -q)
+    CONTAINERS=$(${DOCKER} ps -a -q)
     if [[ -n $CONTAINERS ]] 
     then
-         ${DOCKER} stop $CONTAINERS # Stops old containers.
-         ${DOCKER} rm $CONTAINERS   # Remove old containers.
+        ${DOCKER} stop $CONTAINERS # Stops old containers.
+        ${DOCKER} rm $CONTAINERS   # Remove old containers.
     fi
     if [[ -f ./tmp/pid/server.pid ]]
     then
-         rm ./tmp/pid/server.pid
+        rm ./tmp/pid/server.pid
     fi
 }
 function build_purge {
@@ -97,13 +97,13 @@ function build_purge {
     then
         rm ${GEMS}.lock                                # Purges the lock.
     fi
-     ${DOCKER} rmi ${PROJECT_DIR}_web:latest   # Removes old project image.
+    ${DOCKER} rmi ${PROJECT_DIR}_web:latest   # Removes old project image.
 }
 function build {
     build_purge
 
-     ${DOCKER_COMPOSE} build                   # Builds a new image.
-     ${DOCKER_COMPOSE} run web rake db:seed    # Adds admin user.
+    ${DOCKER_COMPOSE} build                   # Builds a new image.
+    ${DOCKER_COMPOSE} run web rake db:seed    # Adds admin user.
     app_test
 }
 
